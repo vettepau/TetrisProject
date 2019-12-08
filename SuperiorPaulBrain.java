@@ -1,7 +1,12 @@
 
-public class PaulBrain implements Brain {
-
-public int bestMove(Board board, Piece piece, int pieceX, int pieceY, int limitHeight)  {
+public class SuperiorPaulBrain implements Brain{
+	/**
+	 Given a piece and a board, returns a move object that represents
+	 the best play for that piece, or returns null if no play is possible.
+	 See the Brain interface for details.
+	*/
+	@Override
+	public int bestMove(Board board, Piece piece, int pieceX, int pieceY, int limitHeight)  {
 		
 		double bestScore = 1e20;
 		int bestX = 0;
@@ -68,71 +73,61 @@ public int bestMove(Board board, Piece piece, int pieceX, int pieceY, int limitH
 		
 		int sumHeight = 0;
 		int holes = 0;
-		int partTrench = 0;
-		int Trench = 0;
-		int rightHeight = 20;
-		int leftHeight = 20;
-		int trenchHeight = 3;
+		int doubleHoles = 0;
+		double diff = 0;
 		
 		// Count the holes, and sum up the heights
 		for (int x=0; x<width; x++) {
 			final int colHeight = board.getColumnHeight(x);
-			if(x != 9) {
-				rightHeight = board.getColumnHeight(x+1);	
-			}
-			
-			if(x != 0) {
-				leftHeight = board.getColumnHeight(x-1);
-			}
-			
-			if(leftHeight > rightHeight) {
-				trenchHeight = rightHeight;
-			}
-			else {
-				trenchHeight = leftHeight;
-			}
-			
 			sumHeight += colHeight;
+			int i = 5; //holes further down don't have a great impact
 			
 			int y = colHeight - 2;	// addr of first possible hole
-			int i = 5;	//holes further down don't really matter
 			
 			while (y>=0 && i>0) {
 				if  (!board.getGrid(x,y)) {
 					holes++;
-					if(x>0 && x<9 && trenchHeight>4) {
-						if(board.getGrid(x+1, trenchHeight-i) && board.getGrid(x-1, trenchHeight-i)) {
-							partTrench++;
-						}
-					}
-					else if(x == 0 && trenchHeight>4) {
-						if(board.getGrid(x+1, trenchHeight-i)) {
-							partTrench++;
-						}
-					}
-					else if(x == 9 && trenchHeight>4) {
-						if(board.getGrid(x-1, trenchHeight-i)) {
-							partTrench++;
-						}
-					}
 				}
 				y--;
 				i--;
 			}
-			if(partTrench > 2) {
-				Trench = partTrench-2;
-				partTrench = 0;
-			}
-			else {
-				partTrench = 0;
+		}
+		double avgHeight = ((double)sumHeight)/width;
+		
+		// Count double holes
+		for (int x=0; x<width; x++) {
+			final int colHeight2 = board.getColumnHeight(x);
+			int y = colHeight2 - 2;	// addr of first possible hole
+			
+			while (y>0) {
+				if  (!board.getGrid(x,y)) {
+					if(!board.getGrid(x,y-1)) {
+						doubleHoles++;
+					}
+				}
+				y=y-2;
 			}
 		}
 		
-		double avgHeight = ((double)sumHeight)/width;
+		//skirt differences
+		for (int x=0; x<width; x++) {
+			final int colHeight3 = board.getColumnHeight(x);
+
+			double diffCalc = avgHeight - colHeight3;
+			diff += diffCalc * diffCalc;
+			
+		}
+		
+//		Double[] ML = JBrainTester.learning();
+//		double a = ML[0];
+//		double b = ML[1];
+//		double c = ML[2];
+//		double d = ML[3];
+//		double e = ML[4];
 		
 		// Add up the counts to make an overall score
 		// The weights, 8, 40, etc., are just made up numbers that appear to work
-		return (8*maxHeight + 40*avgHeight + 1.25*holes + 25*Trench);	
+		return (8*maxHeight + 55*avgHeight + 1.25*holes + 1.25*doubleHoles + diff);	
 	}
-	
+
 }

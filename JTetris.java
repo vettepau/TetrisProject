@@ -641,7 +641,7 @@ public class JTetris extends JComponent {
 		
 		// Could create a JTetris or JBrainTetris here
 		final int pixels = 16;
-		JTetris tetris = new JBrainTetris(WIDTH*pixels+2, (HEIGHT+TOP_SPACE)*pixels+2);
+		JTetris tetris = new JBrainTetris(WIDTH*pixels+2, (HEIGHT+TOP_SPACE)*pixels+2, null);
 		
 		
 		container.add(tetris, BorderLayout.CENTER);
